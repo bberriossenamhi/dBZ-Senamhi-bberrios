@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar SENAMHI (dBZ)</title>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.umd.min.js"></script>
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.5.1/maptiler-sdk.css" rel="stylesheet" />
+    <script src="https://cdn.maptiler.com/maptiler-weather/v2.2.0/maptiler-weather.umd.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #map { width: 100vw; height: 100vh; }
+        #info-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div id="info-panel">
+        <strong>Fecha y Hora:</strong> <span id="time-text">Cargando...</span><br>
+        <strong>Valor dBZ:</strong> <span id="pointer-data">--</span>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        maptilersdk.config.apiKey = "ozSBP6IBS7CgmtWez7iB";
+
+        const map = new maptilersdk.Map({
+            container: "map",
+            style: maptilersdk.MapStyle.BACKDROP,
+            center: [-71.537, -16.398], // Centro en Perú
+            zoom: 7
+        });
+
+        const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.8 });
+        
+        map.on("load", function () {
+            map.addLayer(radarLayer);
+            radarLayer.animateByFactor(3600); // Velocidad de animación
+
+            radarLayer.on("tick", () => {
+                const d = radarLayer.getAnimationTimeDate();
+                if (d) {
+                    document.getElementById("time-text").innerText = new Date(d).toLocaleString();
+                }
+            });
+        });
+
+        function updatePointerValue(lngLat) {
+            if (!lngLat) return;
+            const data = radarLayer.pickAt(lngLat.lng, lngLat.lat);
+            
+            if (data && data.value !== undefined) {
+                document.getElementById("pointer-data").innerText = `${data.value.toFixed(1)} dBZ`;
+            } else {
+                document.getElementById("pointer-data").innerText = "--";
+            }
+        }
+
+        map.on("mousemove", (e) => updatePointerValue(e.lngLat));
+
+        const estaciones = [{'Nombre': 'LA PAMPILLA', 'Latitud': -16.4138, 'Longitud': -71.53453}, {'Nombre': 'CHIGUATA', 'Latitud': -16.40644, 'Longitud': -71.40913}, {'Nombre': 'HUASACACHE', 'Latitud': -16.45774, 'Longitud': -71.56635}, {'Nombre': 'LAS SALINAS', 'Latitud': -16.3206, 'Longitud': -71.1521}, {'Nombre': 'LA JOYA', 'Latitud': -16.58359, 'Longitud': -71.92464}, {'Nombre': 'CAMANÁ', 'Latitud': -16.64395, 'Longitud': -72.70432}, {'Nombre': 'PUNTA ATICO', 'Latitud': -16.2317, 'Longitud': -73.6964}, {'Nombre': 'CARAVELI', 'Latitud': -15.77568, 'Longitud': -73.36259}, {'Nombre': 'CHAPARRA', 'Latitud': -15.74765, 'Longitud': -73.87089}, {'Nombre': 'LOMAS', 'Latitud': -15.57119, 'Longitud': -74.8503}, {'Nombre': 'ANDAGUA', 'Latitud': -15.5009, 'Longitud': -72.3551}, {'Nombre': 'APLAO', 'Latitud': -16.07288, 'Longitud': -72.49226}, {'Nombre': 'AYO', 'Latitud': -15.6833, 'Longitud': -72.2704}, {'Nombre': 'CHACHAS', 'Latitud': -15.5025, 'Longitud': -72.2686}, {'Nombre': 'CHOCO', 'Latitud': -15.5771, 'Longitud': -72.1296}, {'Nombre': 'MACHAHUAY', 'Latitud': -15.65321, 'Longitud': -72.50322}, {'Nombre': 'ORCOPAMPA', 'Latitud': -15.2639, 'Longitud': -72.341}, {'Nombre': 'PAMPACOLCA', 'Latitud': -15.7167, 'Longitud': -72.5683}, {'Nombre': 'CABANACONDE', 'Latitud': -15.6226, 'Longitud': -71.97409}, {'Nombre': 'CAYLLOMA', 'Latitud': -15.18882, 'Longitud': -71.77019}, {'Nombre': 'CHIVAY', 'Latitud': -15.64163, 'Longitud': -71.60169}, {'Nombre': 'HUAMBO', 'Latitud': -15.73201, 'Longitud': -72.10693}, {'Nombre': 'HUANCA', 'Latitud': -16.03458, 'Longitud': -71.88108}, {'Nombre': 'MADRIGAL', 'Latitud': -15.60999, 'Longitud': -71.80654}, {'Nombre': 'PAMPA DE MAJES', 'Latitud': -16.3357, 'Longitud': -72.1525}, {'Nombre': 'IMATA', 'Latitud': -15.84266, 'Longitud': -71.09062}, {'Nombre': 'PILLONES', 'Latitud': -15.98124, 'Longitud': -71.2167}, {'Nombre': 'SIBAYO', 'Latitud': -15.4892, 'Longitud': -71.45696}, {'Nombre': 'PORPERA', 'Latitud': -15.3142, 'Longitud': -71.3064}, {'Nombre': 'TISCO', 'Latitud': -15.34577, 'Longitud': -71.44702}, {'Nombre': 'CHICHAS', 'Latitud': -15.54811, 'Longitud': -72.91831}, {'Nombre': 'CHUQUIBAMBA', 'Latitud': -15.84602, 'Longitud': -72.65065}, {'Nombre': 'SALAMANCA', 'Latitud': -15.50294, 'Longitud': -72.83202}, {'Nombre': 'YANAQUIHUA', 'Latitud': -15.77649, 'Longitud': -72.87584}, {'Nombre': 'LA HACIENDITA', 'Latitud': -16.9986, 'Longitud': -71.6008}, {'Nombre': 'PAMPA BLANCA', 'Latitud': -17.0716, 'Longitud': -71.7245}, {'Nombre': 'PULLHUAY', 'Latitud': -15.1459, 'Longitud': -72.7439}, {'Nombre': 'COTAHUASI', 'Latitud': -15.21134, 'Longitud': -72.89325}, {'Nombre': 'PUYCA', 'Latitud': -15.06055, 'Longitud': -72.69262}, {'Nombre': 'UBINAS', 'Latitud': -16.3888, 'Longitud': -70.8541}, {'Nombre': 'CRUCERO ALTO', 'Latitud': -15.7643, 'Longitud': -70.9113}, {'Nombre': 'SAN JOSE DE UZUÑA', 'Latitud': -16.58103, 'Longitud': -71.32836}, {'Nombre': 'TUCTUMPAYA', 'Latitud': -16.48827, 'Longitud': -71.33463}, {'Nombre': 'SAN FRANCISCO', 'Latitud': -16.38519, 'Longitud': -71.49044}, {'Nombre': 'CAYMA', 'Latitud': -16.31689, 'Longitud': -71.57919}, {'Nombre': 'YURA', 'Latitud': -16.30271, 'Longitud': -71.62395}];
+        estaciones.forEach(estacion => {
+            new maptilersdk.Marker()
+                .setLngLat([estacion.Longitud, estacion.Latitud])
+                .setPopup(new maptilersdk.Popup().setText(estacion.Nombre))
+                .addTo(map);
+        });
+    </script>
+</body>
+</html>
